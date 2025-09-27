@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +9,33 @@
     <link rel="stylesheet" href="/css/sidebar.css">
     {{> head}}
 </head>
+
 <body>
     {{> sidebar}}
 
     <main>
         <div class="graphs">
-            
+            <section id="graph-carousel" class="gc">
+                <div class="gc-track">
+                    <canvas class="gc-canvas gc-current"></canvas>
+                </div>
+
+                <div class="gc-controls">
+                    <button class="gc-btn gc-prev-btn" aria-label="Previous chart">
+                        <i class="arrow left"></i>
+                    </button>
+                    <div class="gc-pips"><span class="gc-pip"></span></div>
+                    <button class="gc-btn gc-next-btn" aria-label="Next chart">
+                        <i class="arrow right"></i>
+                    </button>
+                </div>
+            </section>
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script aria-hidden="true" src="/js/stats.js"></script>
+    <script aria-hidden="true" src="/js/sidebar.js"></script>
 </body>
+
 </html>
