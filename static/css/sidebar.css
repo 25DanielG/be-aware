@@ -47,7 +47,11 @@ aside .sidebar .nav-links > .nav-link.active {
 aside .sidebar .nav-links > .nav-link div.label {
   max-width: 100%;
   opacity: 1;
-  transition: opacity 0.35s ease, width 0.35s ease;
+  transition: opacity 0.35s ease, width 0.35s ease;;
+}
+
+body:not(.initialized) aside .sidebar .nav-links > .nav-link div.label {
+  color: transparent;
 }
 
 aside .sidebar .nav-links > .nav-link div.icon {

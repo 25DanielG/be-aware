@@ -41,15 +41,9 @@ main > .lower {
   justify-content: center;
 }
 
-main > .line {
-  width: 100%;
-  background: transparent;
-  border-bottom: #00000069 1px solid;
-}
-
 /* calendar */
 
-main > .upper .calendar {
+main .calendar {
   width: 100%;
   height: 100%;
   display: flex;
@@ -92,14 +86,16 @@ main > .journal {
 }
 
 .journal textarea {
+  font-family: "Gabarito", sans-serif;
   width: 100%;
   height: 100%;
   outline: none;
   border: none;
   background: transparent;
-  line-height: 1.5rem;
-  font-size: 1.15rem;
+  border-radius: 0.8rem;
+  padding: 1rem;
   resize: none;
+  font-size: 0.9rem;
 }
 
 /* footer */
