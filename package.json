@@ -21,6 +21,7 @@
     "@google-cloud/local-auth": "^2.1.1",
     "@types/koa": "^2.13.5",
     "axios": "^0.27.2",
+    "date-fns": "^4.1.0",
     "dtrace-provider": "^0.8.8",
     "fs": "^0.0.1-security",
     "handlebars": "^4.7.7",

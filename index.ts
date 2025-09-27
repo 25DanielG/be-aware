@@ -7,7 +7,7 @@ import bodyParser from "koa-bodyparser";
 import serve from "koa-static";
 import session from "koa-session";
 import { createServer } from "http";
-import fs from "fs";
+import fs, { stat } from "fs";
 import * as crypto from "crypto";
 import path from "path";
 import { registerComponentsWithinDirectory } from "./helpers/componentRegistration";
@@ -18,6 +18,7 @@ import loginRouter from "./routers/login";
 import indexRouter from "./routers/index";
 import usersRouter from "./routers/users";
 import journalRouter from "./routers/journal";
+import statsRouter from "./routers/stats";
 
 const app = new Koa();
 
@@ -57,6 +58,7 @@ router.use("", loginRouter.routes());
 router.use("", indexRouter.routes());
 router.use("/journal", journalRouter.routes());
 router.use("/users", usersRouter.routes());
+router.use("/api", statsRouter.routes());
 
 app.use(router.routes());
 app.use(serve("./static", {}));
