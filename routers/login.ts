@@ -13,6 +13,11 @@ import mongoose from "../db";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
+router.get("/logout", requireAuth, async (ctx) => {
+    ctx.session = null;
+    ctx.redirect("/");
+});
+
 router.get("/login", async (ctx) => {
     if (ctx.session!.userId && ctx.session!.authed) {
         ctx.redirect("/journal");
