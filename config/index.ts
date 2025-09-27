@@ -7,6 +7,7 @@ export interface Config {
 	};
 	api: {
 		apiKey: string;
+		agentId: string;
 	};
 	db: {
 		database: string;
