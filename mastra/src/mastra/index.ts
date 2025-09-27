@@ -66,7 +66,7 @@ app.post('/api/emotion', async (req, res) => {
 
 app.post('/api/tips', async (req, res) => {
 	try {
-		const { chartType, data } = req.body;
+		const { chartType, data, journals } = req.body;
 
 		if (!data) {
 			return res.status(400).json({ error: 'Missing "text" in request body' });
@@ -87,7 +87,8 @@ app.post('/api/tips', async (req, res) => {
 		const result = await run.start({
 			inputData: {
 				chartType: chartType,
-				data: data
+				data: data,
+				journals: journals
 			},
 		});
 

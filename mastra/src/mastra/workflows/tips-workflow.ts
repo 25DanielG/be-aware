@@ -3,7 +3,8 @@ import { z } from 'zod';
 
 const entrySchema = z.object({
   chartType: z.string(),
-  data: z.any()
+  data: z.any(),
+  journals: z.array(z.string())
 });
 
 const tipSchema = z.object({
@@ -27,10 +28,16 @@ const classifyEntry = createStep({
       throw new Error('Emotion agent not found');
     }
 
-    const prompt = `Given a ${entry.chartType} chart/graph with data: ${JSON.stringify(entry.data)}, qualitatively analyze the user's emotional state and respond as follows:
+    let prompt = `Given a ${entry.chartType} chart/graph with data: ${JSON.stringify(entry.data)}, qualitatively analyze the user's emotional state and respond as follows:
       1. If the user's emotions appear balanced, provide encouraging feedback.
       2. If the user's emotions indicate challenges, make that observation suggest practical tips to improve mental well-being.
       Respond in two supportive, caring sentences (25 words max). Acknowledge and validate the user's feelings, and gently suggest uplifting or comforting actions.`;
+
+    if (entry.journals && entry.journals.length > 0) {
+      prompt += ` Your feedback should be empathetic, encouraging, and personalized to the user's journals found below: ${entry.journals.join(' ')}`;
+    }
+
+    // console.log(prompt);
 
     const response = await agent.stream([
       {

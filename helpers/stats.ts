@@ -5,7 +5,7 @@ import config from "../config";
 import { Types } from "mongoose";
 
 export default class {
-    static async generateTip(chartType: string, chartData: any): Promise<number[]> {
+    static async generateTip(chartType: string, chartData: any, journals: string[]): Promise<number[]> {
         const response = await fetch(config.api.apiTips, {
             method: "POST",
             headers: {
@@ -13,7 +13,8 @@ export default class {
             },
             body: JSON.stringify({
                 chartType: chartType,
-                data: chartData
+                data: chartData,
+                journals: journals
             }),
         });
 

@@ -386,7 +386,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
         ctx.body = {
             timeframe: res.timeframe,
             chartConfig: res.chartConfig,
-            tip: await Stats.generateTip(type, res.chartData)
+            tip: await Stats.generateTip(type, res.chartData, journalsCut.map(j => j.journal.toString())) // pass journal texts for context
         }
 
     } catch (err) {
