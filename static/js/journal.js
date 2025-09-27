@@ -10,6 +10,8 @@
     const tipTextEl = modal?.querySelector(".tip-text");
     const hintBtn = document.querySelector(".hint");
 
+    const pageHints = new Map();
+
     if (!ta || !left || !right || !curEl || !totEl || !hintBtn || !modal || !tipTextEl) {
         console.warn("Pagination init: missing required elements");
         return;
@@ -54,10 +56,8 @@
             lastSent = sig;
 
             if (tip) {
-                latest = tip;
-                tipTextEl.textContent = latest;
-                hintBtn.hidden = false;
-                hintBtn.classList.add("is-visible");
+                showHint(tip);
+                pageHints.set(idx, tip);
             }
         } catch (err) {
             console.error(err);
@@ -65,23 +65,16 @@
     }
 
     function scheduleTip() {
+        if (pages[idx]?.readOnly) return;
         console.log("Scheduling tip...");
         clearTimeout(timer);
-        timer = setTimeout(requestTip, 1000 * 30); // 30s
+        timer = setTimeout(requestTip, 1000 * 15); // 15s
     }
 
-    ta.addEventListener("input", scheduleTip);
-
-    const reScheduleOnPageChange = () => {
-        // if cur page is not read only
-        if (!pages[idx].readOnly) scheduleTip();
-    }
-    document.querySelector(".page-left")?.addEventListener("click", reScheduleOnPageChange);
-    document.querySelector(".page-right")?.addEventListener("click", reScheduleOnPageChange);
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-            setTimeout(reScheduleOnPageChange, 0);
-        }
+    ta.addEventListener("input", () => {
+        pageHints.delete(idx);
+        scheduleTip();
+        saveCurrent();
     });
 
     hintBtn.addEventListener("click", () => {
@@ -97,6 +90,20 @@
     document.addEventListener("keydown", (e) => {
         if (!modal.hidden && e.key === "Escape") closeModal();
     });
+
+    function showHint(tip) {
+        latest = tip;
+        tipTextEl.textContent = tip;
+        hintBtn.hidden = false;
+        hintBtn.classList.add("is-visible");
+    }
+
+    function hideHint() {
+        latest = "";
+        hintBtn.classList.remove("is-visible");
+        hintBtn.hidden = true;
+        if (!modal.hidden) modal.hidden = true;
+    }
 
     function render() {
         const p = pages[idx];
@@ -117,8 +124,17 @@
         saveCurrent();
         const next = idx + delta;
         if (next < 0 || next > pages.length - 1) return;
+        hideHint();
+        clearTimeout(timer);
+        lastSent = "";
         idx = next;
         render();
+        const cached = pageHints.get(idx);
+        if (cached) {
+            showHint(cached);
+        } else if (!pages[idx].readOnly) {
+            scheduleTip();
+        }
     }
 
     window.JournalPager = {
@@ -140,8 +156,17 @@
         goTo(n) {
             if (n < 1 || n > pages.length) return;
             saveCurrent();
+            hideHint();
+            clearTimeout(timer);
+            lastSent = "";
             idx = n - 1;
             render();
+            const cached = pageHints.get(idx);
+            if (cached) {
+                showHint(cached);
+            } else if (!pages[idx].readOnly) {
+                scheduleTip();
+            }
         },
         index() {
             return idx;
@@ -157,12 +182,18 @@
                 pages.push({ value: txt, readOnly: true });
             });
             idx = 0;
+            hideHint();
+            clearTimeout(timer);
+            lastSent = "";
+            pageHints.clear();
             render();
-            setTimeout(scheduleTip, 1500); // 1.5s
+        },
+        resetPrompt() {
+            hideHint();
+            clearTimeout(timer);
+            lastSent = "";
         }
     };
-
-    ta.addEventListener("input", () => saveCurrent());
 
     left.addEventListener("click", () => go(-1));
     right.addEventListener("click", () => go(1));
