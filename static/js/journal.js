@@ -1,12 +1,12 @@
 (() => {
-    const ta = document.querySelector('main .journal textarea');
-    const left = document.querySelector('.page-control .left');
-    const right = document.querySelector('.page-control .right');
-    const curEl = document.querySelector('.page-control .current');
-    const totEl = document.querySelector('.page-control .total');
+    const ta = document.querySelector("main .journal textarea");
+    const left = document.querySelector(".page-control .page-left");
+    const right = document.querySelector(".page-control .page-right");
+    const curEl = document.querySelector(".page-control .current");
+    const totEl = document.querySelector(".page-control .total");
 
     if (!ta || !left || !right || !curEl || !totEl) {
-        console.warn('Pagination init: missing required elements');
+        console.warn("Pagination init: missing required elements");
         return;
     }
 
@@ -19,11 +19,11 @@
         const p = pages[idx];
         ta.value = p.value;
         ta.readOnly = p.readOnly;
-        ta.classList.toggle('readonly', p.readOnly);
+        ta.classList.toggle("readonly", p.readOnly);
         curEl.textContent = String(idx + 1);
         totEl.textContent = String(pages.length);
-        left.classList.toggle('disabled', idx === 0);
-        right.classList.toggle('disabled', idx === pages.length - 1);
+        left.classList.toggle("disabled", idx === 0);
+        right.classList.toggle("disabled", idx === pages.length - 1);
     }
 
     function saveCurrent() {
@@ -78,17 +78,17 @@
         }
     };
 
-    ta.addEventListener('input', () => saveCurrent());
+    ta.addEventListener("input", () => saveCurrent());
 
-    left.addEventListener('click', () => go(-1));
-    right.addEventListener('click', () => go(1));
+    left.addEventListener("click", () => go(-1));
+    right.addEventListener("click", () => go(1));
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); go(-1); }
-        if (e.key === 'ArrowRight' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); go(1); }
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" && !e.metaKey && !e.ctrlKey) { e.preventDefault(); go(-1); }
+        if (e.key === "ArrowRight" && !e.metaKey && !e.ctrlKey) { e.preventDefault(); go(1); }
     });
 
-    ta.addEventListener('focus', () => {
+    ta.addEventListener("focus", () => {
         if (ta.readOnly) ta.blur();
     });
 

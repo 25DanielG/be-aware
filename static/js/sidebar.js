@@ -58,6 +58,8 @@ if (send) {
                 alert("Cannot submit empty journal entry.");
                 return;
             }
+            StatusUI.show("Sending...");
+
             const date = getActiveCalendarISO();
             const res = await fetch("/journal", {
                 method: "POST",
@@ -70,12 +72,15 @@ if (send) {
                 throw new Error(`POST /journal failed: ${res.status} ${msg}`);
             }
 
+            StatusUI.success("Saved");
+            await new Promise(r => setTimeout(r, 900));
             const idx = (window.JournalPager.getIndex?.() ?? window.JournalPager.index?.());
             window.JournalPager.setReadOnly(idx, true);
         } catch (e) {
             console.error(e);
             alert("Failed to submit journal. Please try again.");
         } finally {
+            StatusUI.hide();
             send.style.pointerEvents = "";
         }
     });

@@ -73,6 +73,22 @@ main > .lower .page-control {
   gap: 1rem;
 }
 
+main > .lower .page-control .page-left,
+main > .lower .page-control .page-right {
+  height: 50%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+main > .lower .page-control .page-left:hover,
+main > .lower .page-control .page-right:hover {
+  background: #e0e0e0;
+}
+
 /* arrows */
 
 .arrow {

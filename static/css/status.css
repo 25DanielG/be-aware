@@ -1,0 +1,88 @@
+.status-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: rgba(0, 0, 0, .12);
+    backdrop-filter: blur(3px);
+    z-index: 9999;
+}
+
+.status-card {
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+    transform: scale(.98);
+    animation: pop-in .18s ease-out both;
+}
+
+@keyframes pop-in {
+    from {
+        transform: scale(0.92);
+        opacity: 0
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1
+    }
+}
+
+.status-svg {
+    width: 64px;
+    height: 64px;
+}
+
+.spinner {
+    stroke: #8a8a8a;
+    stroke-dasharray: 140;
+    stroke-dashoffset: 0;
+    transform-origin: 40px 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.check {
+    stroke: #16a34a;
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    opacity: 0;
+}
+
+.status-overlay.success .spinner {
+    stroke: #16a34a;
+    animation: none;
+    transition: stroke 0.25s ease, opacity 0.2s ease;
+    opacity: 0.15;
+}
+
+.status-overlay.success .check {
+    opacity: 1;
+    animation: draw 420ms ease forwards 60ms;
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.status-text {
+    font-size: 0.9rem;
+    color: #222;
+}
+
+.status-overlay.success .status-text {
+    color: #16a34a;
+    transition: color .2s ease;
+}
