@@ -11,4 +11,9 @@ import Users from "../helpers/users";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
+router.get("/all", bodyParser(), async (ctx) => {
+    const users = await Users.getAll();
+    ctx.body = users;
+});
+
 export default router;

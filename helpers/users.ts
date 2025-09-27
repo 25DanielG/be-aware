@@ -8,6 +8,10 @@ export default class {
         return await User.findById(mongoose.Types.ObjectId(identifier));
     }
 
+    static async getUserByEmail(email: string) {
+        return await User.findOne({ email: email });
+    }
+
     static async exists(identifier: string) {
         return isValidID(identifier) && (await this.getUser(identifier)) != null;
     }
@@ -24,11 +28,10 @@ export default class {
         return (await this.getUser(identifier)).firstName;
     }
 
-    static async add(username: string, email: string, firstName: string, lastName: string, password: string) {
+    static async add(email: string, firstName: string, lastName: string, password: string) {
         const p = createHash('sha256').update(password, "utf-8").digest('hex'); // hash password
 
         const response = await (new User({ 
-            username: username,
             email: email,
             firstName: firstName,
             lastName: lastName,
@@ -49,5 +52,10 @@ export default class {
     static async getUserJournals(identifier: string) {
         const user = await this.getUser(identifier);
         return user.journals;
+    }
+
+    static async authenticate(email: string, password: string) {
+        const p = createHash('sha256').update(password, "utf-8").digest('hex'); // hash password
+        return await User.findOne({ email: email, password: p });
     }
 }
