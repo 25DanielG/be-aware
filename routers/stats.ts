@@ -100,10 +100,42 @@ function getPrimaryEmotion(journals: JournalSchema[]): [number, number] {
 }
 
 
-// Get daily average emotion scores for area chart
+// Get emotion scores for multi-line chart
+function getLines(
+    journals: JournalSchema[],
+) {
+    let scores: number[][] = [];
+    let labels: Date[] = [];
+    for (const journal of journals) {
+        let cur: number[] = [];
+        for (let i = 0; i < 6; i++) {
+            cur[i] = journal.sentiment[i].valueOf()
+        }
+        scores.push(cur);
+        labels.push(journal.date)
+    }
+
+    return [scores, labels];
+}
+
+// Get % emotion scores for area chart
 function getArea(
     journals: JournalSchema[],
 ) {
+    let scores: number[][] = [];
+    let labels: Date[] = [];
+    for (const journal of journals) {
+        let cur: number[] = [];
+        let sum = 0;
+        for (let i = 0; i < 6; i++) {
+            cur[i] = journal.sentiment[i].valueOf();
+            sum += cur[i];
+        }
+        scores.push(cur.map(element => element / sum));
+        labels.push(journal.date);
+    }
+
+    /*
     const dailyMap: Record<string, Number[][]> = {};
 
     for (const journal of journals) {
@@ -126,19 +158,8 @@ function getArea(
 
             return avg.map((val) => val / sentiments.length);
         });
-
-    return dailyAverages;
-}
-
-// Get journal lengths
-function getJournalLengths(
-    journals: JournalSchema[]
-) {
-    let lengths: number[];
-    for (const journal of journals) {
-        lengths.push(journal.journal.length)
-    }
-    return lengths
+    */
+    return [scores, labels];
 }
 
 router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) => {
@@ -237,10 +258,9 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                 }
             };
         } else if (type == "area") {
-            const series = getArea(journalsCut);
-            const labels = journalsCut
-            .map((j) => format(new Date(j.date), "yyyy-MM-dd"))
-            .sort();
+            const area_data = getArea(journalsCut);
+            const series = area_data[0];
+            const labels = area_data[1];
 
             const hexToRgba = (hex: string, alpha = 0.25) => {
                 const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -275,12 +295,14 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                         x: {
                             ticks: { maxRotation: 0, autoSkip: true },
                             grid: { display: false },
+                            title: { display: true, text: "Date" }
                         },
                         y: {
                             stacked: true,
                             min: 0,
                             max: 1,
                             grid: { color: "rgba(0,0,0,0.06)" },
+                            title: { display: true, text: "Proportion of Emotion" }
                         },
                     },
                     plugins: {
@@ -370,13 +392,11 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                 chartData: { winnerIndex, label, vector } // for tip generation
             };
         } else if (type === "bar-line") {
-            const labels = journalsCut
-                .map((j) => format(new Date(j.date), "yyyy-MM-dd"))
-                .sort();
-        
-            const emotionSeries = getArea(journalsCut);
+            const area_data = getLines(journalsCut);
+            const emotionSeries = area_data[0];
+            const labels = area_data[1];
             const journalLengths = journalsCut.map(j => j.journal.length);
-        
+
             const hexToRgba = (hex: string, alpha = 0.25) => {
                 const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 if (!m) return hex;
@@ -385,7 +405,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                 const b = parseInt(m[3], 16);
                 return `rgba(${r}, ${g}, ${b}, ${alpha})`;
             };
-        
+
             const datasets: any[] = [
                 {
                     type: "bar",
@@ -406,7 +426,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     yAxisID: "yLine",
                 })),
             ];
-        
+
             const config = {
                 type: "bar",
                 data: { labels, datasets },
@@ -414,11 +434,21 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     responsive: true,
                     maintainAspectRatio: true,
                     scales: {
-                        x: { stacked: false, grid: { display: false } },
+                        x: {
+                            stacked: false,
+                            grid: { display: false },
+                            title: {
+                                display: true,
+                                text: "Date"
+                            }
+                        },
                         yBar: {
                             type: "linear",
                             position: "left",
-                            title: { display: true, text: "Journal Length (chars)" },
+                            title: {
+                                display: true,
+                                text: "Journal Length (chars)"
+                            },
                             grid: { drawOnChartArea: false },
                         },
                         yLine: {
@@ -426,7 +456,10 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                             position: "right",
                             min: 0,
                             max: 1,
-                            title: { display: true, text: "Emotion Scores" },
+                            title: {
+                                display: true,
+                                text: "Emotion Scores"
+                            },
                             grid: { drawOnChartArea: false },
                         },
                     },
@@ -446,7 +479,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     interaction: { mode: "index", intersect: false },
                 },
             };
-        
+
             res = {
                 timeframe,
                 chartConfig: config,
