@@ -14,6 +14,14 @@ const chartBuckets = {
     const pipsWrap = el.querySelector(".gc-pips");
     const tipEl = el.querySelector(".gc-tip");
 
+    const btnDay = document.querySelector("aside .nav-link.day");
+    const btnWeek = document.querySelector("aside .nav-link.week");
+    const btnMonth = document.querySelector("aside .nav-link.month");
+    console.log(btnDay, btnWeek, btnMonth);
+    if (!btnDay || !btnWeek || !btnMonth) return;
+
+    const buttons = { day: btnDay, week: btnWeek, month: btnMonth };
+
     /** @type {Chart|null} */
     let chart = null;
 
@@ -24,6 +32,31 @@ const chartBuckets = {
      */
     let items = [];
     let idx = 0;
+
+    function setActive(tf) {
+        Object.entries(buttons).forEach(([k, el]) => {
+            if (!el) return;
+            el.classList.toggle("active", k === tf);
+            el.setAttribute("aria-current", k === tf ? "page" : "false");
+        });
+    }
+
+    function setView(tf) {
+        const bucket = chartBuckets[tf] || [];
+        setActive(tf);
+
+        if (!Array.isArray(bucket) || bucket.length === 0) {
+            try { StatusUI?.show?.(`No ${tf} charts yet`); setTimeout(() => StatusUI?.hide?.(), 900); } catch { }
+            GraphCarousel.set([]);
+            return;
+        }
+
+        GraphCarousel.set(bucket);
+    }
+
+    btnDay.addEventListener("click", (e) => { e.preventDefault(); setView("day"); });
+    btnWeek.addEventListener("click", (e) => { e.preventDefault(); setView("week"); });
+    btnMonth.addEventListener("click", (e) => { e.preventDefault(); setView("month"); });
 
     function destroyChart() {
         if (chart && typeof chart.destroy === "function") chart.destroy();
@@ -73,6 +106,8 @@ const chartBuckets = {
         idx = next;
         render();
     }
+
+    setActive("week");
 
     window.GraphCarousel = {
         set(arr) {
