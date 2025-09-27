@@ -1,4 +1,4 @@
-const logo = document.querySelector('aside .sidebar .logo');
+const logo = document.querySelector('aside .sidebar #logo');
 const sidebar = document.querySelector('aside');
 
 setTimeout(() => {
@@ -125,7 +125,10 @@ const initCal = () => {
         dayEl.addEventListener("click", async () => {
             const iso = dayEl.dataset.date;
             if (!iso) return;
-            try { await loadDay(iso); }
+            try {
+                window.JournalPager.resetPrompt();
+                await loadDay(iso);
+            }
             catch (e) {
                 console.error(e);
                 alert("Could not load journals for that day.");

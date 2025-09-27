@@ -492,8 +492,35 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
         ctx.body = {
             timeframe: res.timeframe,
             chartConfig: res.chartConfig,
-            tip: await Stats.generateTip(type, res.chartData)
+            tip: await Stats.generateTip(type, res.chartData, journalsCut.map(j => j.journal.toString())) // pass journal texts for context
         }
+
+    } catch (err) {
+        console.error(err);
+        ctx.status = 500;
+        ctx.body = { error: "Server error" };
+    }
+});
+
+router.post("/journal/prompt", compose([bodyParser(), requireAuth]), async (ctx) => {
+    try {
+        const user = await Users.getUser(ctx.session.userId);
+        if (!user) {
+            ctx.status = 401;
+            ctx.body = { error: "Unauthorized" };
+            return;
+        }
+        // text in body
+        const text = (ctx.request.body as any).text;
+        if (typeof text !== "string" || text.trim().length < 20) {
+            ctx.status = 400;
+            ctx.body = { error: "Invalid text. Must be a string of at least 20 characters." };
+            return;
+        }
+
+        const prompt = await Stats.getJournalPrompt(text);
+        ctx.body = { prompt };
+        ctx.status = 201;
 
     } catch (err) {
         console.error(err);
