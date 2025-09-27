@@ -13,6 +13,7 @@ import mongoose from "../db";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
+
 router.get("/", async (ctx) => {
     await ctx.render("pages/journal");
 });
