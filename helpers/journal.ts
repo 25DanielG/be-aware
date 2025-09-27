@@ -19,6 +19,7 @@ export default class {
         await Journal.deleteMany({});    
     }
 
+    
     static async add(journal: string, date: Date) {
         const response = await (new Journal({ 
             journal: journal,
