@@ -14,10 +14,18 @@ import mongoose from "../db";
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
 router.get("/login", async (ctx) => {
+    if (ctx.session!.userId) {
+        ctx.redirect("/journal");
+        return;
+    }
     await ctx.render("pages/login");
 });
 
 router.get("/signup", async (ctx) => {
+    if (ctx.session!.userId) {
+        ctx.redirect("/journal");
+        return;
+    }
     await ctx.render("pages/signup");
 });
 
