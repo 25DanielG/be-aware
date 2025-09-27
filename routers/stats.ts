@@ -164,23 +164,59 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
             }
         }
 
-        let journals_cut = getJournalsInTimeframe(journals, timeframe); // only journals in timeframe
+        let journalsCut = getJournalsInTimeframe(journals, timeframe); // only journals in timeframe
+
+        // pie chart
+        const [percentagesRaw] = getPercentage(journalsCut) || [[]];
+        const percentages = Array.isArray(percentagesRaw) && percentagesRaw.length === 6 ? percentagesRaw : [0, 0, 0, 0, 0, 0];
+        const EMOTION_LABELS = ["Joy", "Sadness", "Anger", "Fear", "Disgust", "Surprise"];
+        const isFraction = percentages.some(v => v > 0 && v <= 1) && percentages.every(v => v <= 1);
+        const dataChart = isFraction ? percentages.map(v => +(v * 100).toFixed(2)) : percentages;
+        const pieConfig = {
+            type: "pie",
+            data: {
+                labels: EMOTION_LABELS,
+                datasets: [
+                    {
+                        label: "Emotion share",
+                        data: dataChart,
+                        backgroundColor: backgroundColor,
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx: any) => {
+                                const label = ctx.label || "";
+                                const val = ctx.parsed ?? 0;
+                                const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0) || 1;
+                                const pct = ((val / total) * 100).toFixed(1);
+                                return `${label}: ${val}${isFraction ? "%" : ""} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
 
         let grouped: any;
         switch (type) {
             case "pie":
-                grouped = getPercentage(journals_cut);
+                grouped = getPercentage(journalsCut);
 
                 ctx.body = {
                     timeframe,
-                    chartData: {
-                        data: grouped[0],
-                        backgroundColor: backgroundColor
-                    }
+                    chartConfig: pieConfig
                 };
                 break;
             case "primary":
-                grouped = getPrimaryEmotion(journals_cut);
+                grouped = getPrimaryEmotion(journalsCut);
                 ctx.body = {
                     timeframe,
                     chartData: {
@@ -190,7 +226,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                 };
                 break;
             case "area":
-                grouped = getArea(journals_cut);
+                grouped = getArea(journalsCut);
                 ctx.body = {
                     timeframe,
                     chartData: {

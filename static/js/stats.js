@@ -1,3 +1,9 @@
+const chartBuckets = {
+  day: [],
+  week: [],
+  month: []
+};
+
 (() => {
     const el = document.getElementById("graph-carousel");
     if (!el) return;
@@ -82,3 +88,28 @@
     const onResize = () => { cancelAnimationFrame(rAf); rAf = requestAnimationFrame(render); };
     window.addEventListener("resize", onResize);
 })();
+
+const initializeGraphs = async (buckets) => {
+    const timeframes = ["day", "week", "month"];
+    for (const timeframe of timeframes) {
+        if (!Array.isArray(buckets[timeframe])) continue;
+        const res = await fetch(`api/journals/visualize/${timeframe}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "pie" })
+        });
+        if (!res.ok) {
+            console.error(`Failed to fetch ${timeframe} data:`, await res.json());
+            continue;
+        }
+        const data = await res.json();
+        buckets[timeframe].push(data);
+    }
+};
+
+const addGraphs = async () => {
+    await initializeGraphs(chartBuckets);
+    window.GraphCarousel.add(chartBuckets.week[0].chartConfig);
+};
+
+addGraphs();
