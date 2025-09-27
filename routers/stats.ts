@@ -10,6 +10,8 @@ import * as user from "../helpers/users";
 import Users from "../helpers/users";
 import Journal from "../helpers/journal";
 import mongoose from "../db";
+import { format, subDays, subWeeks, subMonths, isAfter } from "date-fns";
+import { Journal as JournalSchema } from "../models/journal";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 const backgroundColor = [
@@ -21,10 +23,38 @@ const backgroundColor = [
     "#FF9F40", // Surprise
 ]
 
-// Helper: group journals by timeframe
-function groupByPercentage(
-    journals: any[],
-    timeframe: "day" | "week" | "month"
+interface JournalVisualize {
+    journals: JournalSchema[];
+    timeframe: "day" | "week" | "month";
+    chartType: string
+}
+
+function getJournalsInTimeframe(journals: JournalSchema[], timeframe: string) {
+    let days: number;
+    let threshold: Date;
+    const now = new Date();
+
+    switch (timeframe) {
+        case "day":
+            threshold = subDays(now, 1);
+            break;
+        case "week":
+            threshold = subDays(now, 7);
+            break;
+        case "month":
+            threshold = subDays(now, 30);
+            break;
+        default:
+            throw new Error("Invalid timeframe. Must be 'day', 'week', or 'month'.");
+    }
+
+    return journals.filter(journal => isAfter(new Date(journal.date), threshold));
+
+}
+
+// Helper: get total percentage of each emotion
+function getPercentage(
+    journals: JournalSchema[]
 ) {
     const totals = [0, 0, 0, 0, 0, 0];
     let sumScore = 0.0;
@@ -36,16 +66,14 @@ function groupByPercentage(
         });
     });
 
-    // Calculate percentages normalized by sumScore
     const sentiments = totals.map(total => sumScore ? total / sumScore : 0);
 
     return [sentiments];
 }
 
-// Helper: get primary emotion from journal entries
-function groupPrimaryEmotion(
-    journals: any[],
-    timeframe: "day" | "week" | "month"
+// Get primary emotion from journal entries
+function getPrimaryEmotion(
+    journals: JournalSchema[],
 ) {
     const totals = [0, 0, 0, 0, 0, 0];
     let sumScore = 0.0;
@@ -57,11 +85,10 @@ function groupPrimaryEmotion(
         });
     });
 
-    // Calculate percentages normalized by sumScore
     const maxIndex: number = totals.reduce((iMax, x, i, arr) => {
         return x > arr[iMax] ? i : iMax;
-      }, 0); // Initializes iMax with 0 (index of the first element)
-      
+    }, 0);
+
     const maxSum: number = totals[maxIndex];
 
     const avgMax = (journals.length ? maxSum / journals.length : 0);
@@ -70,50 +97,40 @@ function groupPrimaryEmotion(
     return [avgMax, maxIndex];
 }
 
-// GET /stats/:userId?timeframe=day|week|month
-router.get("/stats/:userId", async (ctx) => {
-    try {
-        const { userId } = ctx.params;
-        const timeframe = (ctx.query.timeframe as "day" | "week" | "month") || "day";
 
-        const user = await Users.getUser(userId);
-        if (!user) {
-            ctx.status = 404;
-            ctx.body = { error: "User not found" };
-            return;
-        }
+// Get daily average emotion scores for area chart
+function getArea(
+    journals: JournalSchema[],
+) {
+    const dailyMap: Record<string, Number[][]> = {};
 
-        // Fetch journals for this user
-        const journals = await Users.getUserJournals(userId);
-
-        const grouped = groupByPercentage(journals, timeframe);
-
-        ctx.body = {
-            timeframe,
-            chartData: {
-                data: grouped[0],
-                backgroundColor: backgroundColor
-            }
-        };
-    } catch (err) {
-        console.error(err);
-        ctx.status = 500;
-        ctx.body = { error: "Server error" };
+    for (const journal of journals) {
+        const day = format(new Date(journal.date), "yyyy-MM-dd");
+        if (!dailyMap[day]) dailyMap[day] = [];
+        dailyMap[day].push(journal.sentiment);
     }
-});
 
-interface JournalsVisualizeBody {
-    journals: {
-        journal: string;
-        date: string;
-        sentiment: number[];
-    }[];
-    timeframe: "day" | "week" | "month";
+    const dailyAverages: number[][] = Object.keys(dailyMap)
+        .sort() // ascending by date
+        .map((day) => {
+            const sentiments = dailyMap[day];
+            const avg: number[] = [0, 0, 0, 0, 0, 0];
+
+            for (const s of sentiments) {
+                for (let i = 0; i < 6; i++) {
+                    avg[i] += s[i].valueOf();
+                }
+            }
+
+            return avg.map((val) => val / sentiments.length);
+        });
+
+    return dailyAverages;
 }
 
 router.post("/journals/visualize", async (ctx) => {
     try {
-        const body = ctx.request.body as JournalsVisualizeBody & { chartType?: string };
+        const body = ctx.request.body as JournalVisualize;
         const { journals, timeframe, chartType = "bar" } = body;
 
         if (!Array.isArray(journals) || !["day", "week", "month"].includes(timeframe)) {
@@ -136,12 +153,14 @@ router.post("/journals/visualize", async (ctx) => {
             }
         }
 
+        // Shrink journal to timeframe
+        let journals_cut = getJournalsInTimeframe(journals, timeframe)
+
         // Return correct data format given chart type
         let grouped: any
         switch (chartType) {
             case "pie":
-                // Use existing helper function to group sentiments by timeframe
-                grouped = groupByPercentage(journals, timeframe);
+                grouped = getPercentage(journals_cut);
 
                 ctx.body = {
                     timeframe,
@@ -152,7 +171,17 @@ router.post("/journals/visualize", async (ctx) => {
                 };
                 break;
             case "primary":
-                grouped = groupPrimaryEmotion(journals, timeframe);
+                grouped = getPrimaryEmotion(journals_cut);
+                ctx.body = {
+                    timeframe,
+                    chartData: {
+                        data: grouped[0],
+                        backgroundColor: backgroundColor[grouped[1]]
+                    }
+                };
+                break;
+            case "primary":
+                grouped = getArea(journals_cut);
                 ctx.body = {
                     timeframe,
                     chartData: {
@@ -162,7 +191,7 @@ router.post("/journals/visualize", async (ctx) => {
                 };
                 break;
         }
-            
+
     } catch (err) {
         console.error(err);
         ctx.status = 500;
