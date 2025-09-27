@@ -13,6 +13,10 @@ import mongoose from "../db";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
+router.get("/", async (ctx) => {
+    await ctx.render("pages/journal");
+});
+
 router.get("/all", async (ctx) => {
     const entries = await Journal.getAll();
     ctx.body = { entries };

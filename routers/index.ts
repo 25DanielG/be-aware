@@ -13,8 +13,8 @@ import Users from "../helpers/users";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
-router.get("/", requireAuth, async (ctx) => {
-    ctx.render("landing");
+router.get("/", async (ctx) => {
+    await ctx.render("pages/landing");
 });
 
 export default router;
