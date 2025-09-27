@@ -31,15 +31,13 @@ export default class {
 
       
     static async getJournalSentiment(agentId: string, entry: string): Promise<number[]> {
-        const response = await fetch(`http://localhost:4112/api/agents/${agentId}/generate`, {
+        const response = await fetch(config.api.apiEmotion, {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                messages: [
-                  { role: "user", content: entry }
-                ]
+                text: entry
             }),
         });
         
@@ -48,12 +46,8 @@ export default class {
         }
         
         const data = await response.json();
-
-        console.log(data.steps[0].response);
-        //Return sentiment score schema
-        let scores = data.steps[0].text as SentimentScores;
-        
-        return [scores.happiness, scores.sadness, scores.fear, scores.disgust, scores.anger, scores.disgust];
+        console.log([data.happiness, data.sadness, data.fear, data.disgust, data.anger, data.disgust]);
+        return [data.happiness, data.sadness, data.fear, data.disgust, data.anger, data.disgust];
     }
 
 
