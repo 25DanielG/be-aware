@@ -8,6 +8,7 @@ export interface Config {
 	api: {
 		apiKey: string;
 		agentId: string;
+		apiEmotion: string;
 	};
 	db: {
 		database: string;
