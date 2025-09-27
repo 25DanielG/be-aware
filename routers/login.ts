@@ -13,4 +13,12 @@ import mongoose from "../db";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
+router.get("/login", async (ctx) => {
+    await ctx.render("pages/login");
+});
+
+router.get("/signup", async (ctx) => {
+    await ctx.render("pages/signup");
+});
+
 export default router;
