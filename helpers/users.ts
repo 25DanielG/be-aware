@@ -58,4 +58,18 @@ export default class {
         const p = createHash('sha256').update(password, "utf-8").digest('hex'); // hash password
         return await User.findOne({ email: email, password: p });
     }
+
+    static async addJournal(userId: string, journalId: string) {
+        const user = await this.getUser(userId);
+        if (!user) throw new Error("User not found");
+        user.journals.push(mongoose.Types.ObjectId(journalId));
+        await user.save();
+    }
+
+    static async clearJournals(userId: string) {
+        const user = await this.getUser(userId);
+        if (!user) throw new Error("User not found");
+        user.journals = [];
+        await user.save();
+    }
 }

@@ -14,10 +14,18 @@ import mongoose from "../db";
 const router = new Router<Koa.DefaultState, Koa.Context>();
 
 router.get("/login", async (ctx) => {
+    if (ctx.session!.userId && ctx.session!.authed) {
+        ctx.redirect("/journal");
+        return;
+    }
     await ctx.render("pages/login");
 });
 
 router.get("/signup", async (ctx) => {
+    if (ctx.session!.userId && ctx.session!.authed) {
+        ctx.redirect("/journal");
+        return;
+    }
     await ctx.render("pages/signup");
 });
 
@@ -42,6 +50,7 @@ router.post("/login", bodyParser(), async (ctx) => {
         }
 
         ctx.session!.userId = user._id;
+        ctx.session!.authed = true;
         ctx.redirect("/journal");
     } catch (error) {
         console.error("Login error:", error);
@@ -74,6 +83,7 @@ router.post("/signup", bodyParser(), async (ctx) => {
 
         const userId = await Users.add(email, firstName, lastName, password);
         ctx.session!.userId = userId;
+        ctx.session!.authed = true;
         ctx.redirect("/journal");
     } catch (error) {
         console.error("Signup error:", error);

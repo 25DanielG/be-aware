@@ -41,40 +41,6 @@ main > .lower {
   justify-content: center;
 }
 
-/* calendar */
-
-main .calendar {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  max-width: 850px;
-}
-
-.calendar > div.day {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 75%;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.calendar > div.day.today {
-  color: #df4747;
-}
-
-.calendar > div.day.active {
-  background-color: #c0c0c0;
-}
-
-.calendar > div.day:hover {
-  background-color: #e0e0e0;
-}
-
 /* journal */
 
 main > .journal {
@@ -95,7 +61,7 @@ main > .journal {
   border-radius: 0.8rem;
   padding: 1rem;
   resize: none;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 /* footer */

@@ -2,6 +2,7 @@ import Journal from "../models/journal";
 import mongoose, { isValidID } from "../db";
 import { ObjectId } from "mongodb";
 import config from "../config";
+import { Types } from "mongoose";
 
 type SentimentScores = {
     happiness: number;
@@ -26,25 +27,25 @@ export default class {
     }
 
     static async removeAll() {
-        await Journal.deleteMany({});    
+        await Journal.deleteMany({});
     }
 
-      
+
     static async getJournalSentiment(agentId: string, entry: string): Promise<number[]> {
         const response = await fetch(config.api.apiEmotion, {
             method: "POST",
             headers: {
-            "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 text: entry
             }),
         });
-        
+
         if (!response.ok) {
             throw new Error(`API error: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
         console.log([data.happiness, data.sadness, data.fear, data.disgust, data.anger, data.disgust]);
         return [data.happiness, data.sadness, data.fear, data.disgust, data.anger, data.disgust];
@@ -53,7 +54,7 @@ export default class {
 
     static async add(journal: string, date: Date) {
         const s = await this.getJournalSentiment(config.api.agentId, journal);
-        const response = await (new Journal({ 
+        const response = await (new Journal({
             journal: journal,
             date: date,
             sentiment: s,
@@ -62,7 +63,15 @@ export default class {
     }
 
     static async deleteJournal(identifier: string) {
-        await Journal.deleteOne({ _id : identifier });
+        await Journal.deleteOne({ _id: identifier });
+    }
+
+    static async findIdsRange(ids: (string | Types.ObjectId)[], start: Date, end: Date) {
+        const objIds = ids.map((id) => new mongoose.Types.ObjectId(id as any));
+        return Journal
+            .find({ _id: { $in: objIds }, date: { $gte: start, $lt: end } })
+            .sort({ date: 1 })
+            .lean();
     }
 }
 

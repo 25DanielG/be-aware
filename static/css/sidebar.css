@@ -90,6 +90,43 @@ aside .sidebar .logo img {
   margin: 1rem 0;
 }
 
+/* calendar */
+
+aside .sidebar .nav-links .calendar-container {
+  margin: 1rem 0;
+}
+
+aside .sidebar .nav-links .calendar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  column-gap: 1.25rem;
+  color: #000000d4;
+  flex-wrap: wrap;
+}
+
+aside .sidebar .nav-links .calendar .day {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+aside .sidebar .calendar > div.day.today {
+  color: #df4747;
+}
+
+aside .sidebar .calendar > div.day.active {
+  background-color: #c0c0c0;
+}
+
+aside .sidebar .calendar > div.day:hover {
+  background-color: #e0e0e0;
+}
+
 /* closed sidebar */
 
 aside.closed {
@@ -124,4 +161,10 @@ aside.closed .sidebar .nav-links > .nav-link .label {
     width: 0px;
     display: none;
   }
+}
+
+/* calendar closed */
+
+aside.closed .sidebar .nav-links .calendar {
+  display: none;
 }
