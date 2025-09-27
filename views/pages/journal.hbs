@@ -6,6 +6,7 @@
     <title>Be Aware</title>
     <link rel="stylesheet" href="/css/journal.css">
     <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/status.css">
     {{> head}}
 </head>
 <body>
@@ -17,17 +18,24 @@
         </div>
         <div class="lower">
             <div class="page-control">
-                <i class="arrow left"></i>
+                <div class="page-left">
+                    <i class="arrow left"></i>
+                </div>
                 <div class="current-page">
                     <span class="current">1</span>
                     /
                     <span class="total">1</span>
                 </div>
-                <i class="arrow right"></i>
+                <div class="page-right">
+                    <i class="arrow right"></i>
+                </div>
             </div>
         </div>
     </main>
 
+    {{> status}}
+
+    <script aria-hidden="true" src="/js/status.js"></script>
     <script aria-hidden="true" src="/js/journal.js"></script>
     <script aria-hidden="true" src="/js/sidebar.js"></script>
 </body>
