@@ -10,6 +10,7 @@ export interface Config {
 		agentId: string;
 		apiEmotion: string;
 		apiTips: string;
+		apiPrompt: string;
 	};
 	db: {
 		database: string;
