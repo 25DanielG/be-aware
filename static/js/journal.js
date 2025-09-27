@@ -66,6 +66,15 @@
         text() {
             saveCurrent();
             return pages[idx].value;
+        },
+        init(texts) {
+            saveCurrent();
+            pages.length = 0;
+            texts.forEach(txt => {
+                pages.push({ value: txt, readOnly: true });
+            });
+            idx = 0;
+            render();
         }
     };
 
