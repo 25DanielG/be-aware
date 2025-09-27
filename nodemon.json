@@ -1,0 +1,8 @@
+{
+	"ext": "js,ts,css",
+	"ignore": [
+		"*.json",
+		"views/**/*",
+		"scripts"
+	]
+}
