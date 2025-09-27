@@ -24,9 +24,7 @@ const backgroundColor = [
 ]
 
 interface JournalVisualize {
-    journals: JournalSchema[];
-    timeframe: "day" | "week" | "month";
-    chartType: string
+    type: string
 }
 
 function getJournalsInTimeframe(journals: JournalSchema[], timeframe: string) {
@@ -128,10 +126,24 @@ function getArea(
     return dailyAverages;
 }
 
-router.post("/journals/visualize", async (ctx) => {
+router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) => {
     try {
+        const user = await Users.getUser(ctx.session.userId);
+        if (!user) {
+            ctx.status = 401;
+            ctx.body = { error: "Unauthorized" };
+            return;
+        }
+
         const body = ctx.request.body as JournalVisualize;
-        const { journals, timeframe, chartType = "bar" } = body;
+        const { type = "pie" } = body;
+        const timeframe = ctx.params.time;
+
+        const journalIds = await Users.getUserJournals((user as any)._id); // get last 30 days of journals
+        const end = new Date();
+        const start = new Date();
+        start.setDate(end.getDate() - 30);
+        const journals = await Journal.findIdsRange(journalIds, start, end);  // [{ _id, journal, date, sentiment: [..] }]
 
         if (!Array.isArray(journals) || !["day", "week", "month"].includes(timeframe)) {
             ctx.status = 400;
@@ -139,8 +151,7 @@ router.post("/journals/visualize", async (ctx) => {
             return;
         }
 
-        // Validate journal properties
-        for (const journal of journals) {
+        for (const journal of journals) { // validate
             if (
                 typeof journal.journal !== "string" ||
                 !journal.date ||
@@ -148,17 +159,15 @@ router.post("/journals/visualize", async (ctx) => {
                 journal.sentiment.length !== 6
             ) {
                 ctx.status = 400;
-                ctx.body = { error: "Each journal must have 'journal' (string), 'date', and 'sentiment' (array of 6 numbers)." };
+                ctx.body = { error: "invalid journal in array" };
                 return;
             }
         }
 
-        // Shrink journal to timeframe
-        let journals_cut = getJournalsInTimeframe(journals, timeframe)
+        let journals_cut = getJournalsInTimeframe(journals, timeframe); // only journals in timeframe
 
-        // Return correct data format given chart type
-        let grouped: any
-        switch (chartType) {
+        let grouped: any;
+        switch (type) {
             case "pie":
                 grouped = getPercentage(journals_cut);
 
@@ -180,7 +189,7 @@ router.post("/journals/visualize", async (ctx) => {
                     }
                 };
                 break;
-            case "primary":
+            case "area":
                 grouped = getArea(journals_cut);
                 ctx.body = {
                     timeframe,
