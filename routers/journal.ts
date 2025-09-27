@@ -24,7 +24,35 @@ router.get("/all", async (ctx) => {
 
 router.delete("/all", async (ctx) => {
     await Journal.removeAll();
+    // delete journals refs from users
+    const users = await Users.getAll();
+    for (const u of users) {
+        console.log(u);
+        await Users.clearJournals((u as any)._id);
+    }
+    ctx.status = 200;
     ctx.body = { message: "All journal entries deleted." };
+});
+
+router.post("/", compose([bodyParser(), requireAuth]), async (ctx) => {
+    const { content } = ctx.request.body as { content: string };
+    if (!content || typeof content !== "string") {
+        ctx.status = 400;
+        ctx.body = { error: "Content is required and must be a string." };
+        return;
+    }
+    let entry;
+    console.log(ctx.session.userId);
+    try {
+        entry = await Journal.add(content, new Date());
+        await Users.addJournal(ctx.session.userId, entry._id);
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = { error: "Failed to add journal entry." };
+        return;
+    }
+    ctx.status = 201;
+    ctx.body = { entry };
 });
 
 export default router;
