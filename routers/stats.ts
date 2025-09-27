@@ -77,9 +77,7 @@ function getPercentage(
 }
 
 // Get primary emotion from journal entries
-function getPrimaryEmotion(
-    journals: JournalSchema[],
-) {
+function getPrimaryEmotion(journals: JournalSchema[]): [number, number] {
     const totals = [0, 0, 0, 0, 0, 0];
     let sumScore = 0.0;
 
@@ -95,9 +93,7 @@ function getPrimaryEmotion(
     }, 0);
 
     const maxSum: number = totals[maxIndex];
-
-    const avgMax = (journals.length ? maxSum / journals.length : 0);
-
+    const avgMax = journals.length ? maxSum / journals.length : 0;
 
     return [avgMax, maxIndex];
 }
@@ -175,14 +171,14 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
         let config;
         let res;
         let grouped: any;
+        const EMOTION_LABELS = ["Joy", "Sadness", "Anger", "Fear", "Disgust", "Surprise"];
 
         if (type == "pie") { // pie chart
             const [percentagesRaw] = getPercentage(journalsCut) || [[]];
             const percentages = Array.isArray(percentagesRaw) && percentagesRaw.length === 6 ? percentagesRaw : [0, 0, 0, 0, 0, 0];
-            const EMOTION_LABELS = ["Joy", "Sadness", "Anger", "Fear", "Disgust", "Surprise"];
             const isFraction = percentages.some(v => v > 0 && v <= 1) && percentages.every(v => v <= 1);
             const dataChart = isFraction ? percentages.map(v => +(v * 100).toFixed(2)) : percentages;
-            config  = {
+            config = {
                 type: "pie",
                 data: {
                     labels: EMOTION_LABELS,
@@ -228,29 +224,163 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     data: percentagesRaw,
                 }
             };
-        }
+        } else if (type === "area") {
+            const toLocalISO = (d: Date) => {
+                const dd = new Date(d);
+                const y = dd.getFullYear();
+                const m = String(dd.getMonth() + 1).padStart(2, "0");
+                const day = String(dd.getDate()).padStart(2, "0");
+                return `${y}-${m}-${day}`; // local YYYY-MM-DD
+            };
 
-        switch (type) {
-            case "primary":
-                grouped = getPrimaryEmotion(journalsCut);
-                ctx.body = {
-                    timeframe,
-                    chartData: {
-                        data: grouped[0],
-                        backgroundColor: backgroundColor[grouped[1]]
+            const byDay = new Map<
+                string,
+                { sum: number[]; count: number }
+            >();
+
+            for (const j of journalsCut) {
+                const key = toLocalISO(new Date(j.date));
+                if (!byDay.has(key)) byDay.set(key, { sum: [0, 0, 0, 0, 0, 0], count: 0 });
+                const acc = byDay.get(key)!;
+                for (let i = 0; i < 6; i++) acc.sum[i] += Number(j.sentiment[i] || 0);
+                acc.count++;
+            }
+
+            const labels = Array.from(byDay.keys()).sort();
+            const series = labels.map((k) => {
+                const { sum, count } = byDay.get(k)!;
+                return sum.map((v) => (count ? v / count : 0)); // average per emotion
+            });
+
+            const hexToRgba = (hex: string, alpha = 0.25) => {
+                const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                if (!m) return hex;
+                const r = parseInt(m[1], 16);
+                const g = parseInt(m[2], 16);
+                const b = parseInt(m[3], 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            };
+
+            const datasets = EMOTION_LABELS.map((label, i) => ({
+                label,
+                data: series.map((row) => row[i]),
+                fill: true,
+                tension: 0.25,
+                pointRadius: 0,
+                borderWidth: 2,
+                borderColor: backgroundColor[i],
+                backgroundColor: hexToRgba(backgroundColor[i], 0.28),
+            }));
+
+            const config = {
+                type: "line",
+                data: {
+                    labels, // YYYY-MM-DD
+                    datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 0, autoSkip: true },
+                            grid: { display: false },
+                        },
+                        y: {
+                            stacked: true,
+                            min: 0,
+                            max: 1,
+                            grid: { color: "rgba(0,0,0,0.06)" },
+                        },
+                    },
+                    plugins: {
+                        legend: { position: "bottom" },
+                        title: {
+                            display: true,
+                            text: chartTitles["area"],
+                            font: { size: 22, weight: "bold" },
+                            padding: { top: 10, bottom: 16 },
+                        },
+                        tooltip: {
+                            mode: "index",
+                            intersect: false,
+                            callbacks: {
+                                afterBody: (items: any[]) => {
+                                    const total = items.reduce((a, it) => a + (it.parsed?.y ?? 0), 0);
+                                    return `Total: ${total.toFixed(2)}`;
+                                },
+                            },
+                        },
+                    },
+                    interaction: { mode: "index", intersect: false },
+                },
+            };
+
+            res = {
+                timeframe,
+                chartConfig: config,
+                chartData: {
+                    labels,
+                    datasets: datasets.map((d) => ({ label: d.label, data: d.data })),
+                },
+            };
+        } else if (type === "primary") { // core emotion
+            const [vector, winnerIndex] = getPrimaryEmotion(journalsCut) || [[0, 0, 0, 0, 0, 0], 0];
+            const label = EMOTION_LABELS[winnerIndex] ?? "Primary";
+            const color = backgroundColor[winnerIndex] ?? "#888888";
+
+            const centerTextPlugin = {
+                id: "centerText",
+                afterDraw(chart: any) {
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return;
+                    const cx = (chartArea.left + chartArea.right) / 2;
+                    const cy = (chartArea.top + chartArea.bottom) / 2;
+                    ctx.save();
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#111";
+                    ctx.font = "600 18px system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+                    ctx.fillText(label, cx, cy);
+                    ctx.restore();
+                }
+            };
+
+            const config = {
+                type: "doughnut",
+                data: {
+                    labels: [label],
+                    datasets: [{
+                        data: [100],
+                        backgroundColor: [color],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: "68%",
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        title: {
+                            display: true,
+                            text: chartTitles["primary"],
+                            font: { size: 22, weight: "bold" },
+                            padding: { top: 10, bottom: 16 }
+                        }
                     }
-                };
-                break;
-            case "area":
-                grouped = getArea(journalsCut);
-                ctx.body = {
-                    timeframe,
-                    chartData: {
-                        data: grouped[0],
-                        backgroundColor: backgroundColor[grouped[1]]
-                    }
-                };
-                break;
+                },
+                plugins: [centerTextPlugin]
+            };
+
+            res = {
+                timeframe,
+                chartConfig: config,
+                chartData: { winnerIndex, label, vector } // for tip generation
+            };
+        } else {
+            ctx.status = 400; ctx.body = { error: "Unsupported chart type." }; return;
         }
 
         ctx.body = {

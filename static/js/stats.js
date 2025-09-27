@@ -123,18 +123,21 @@ const chartBuckets = {
 const initializeGraphs = async (buckets) => {
     const timeframes = ["day", "week", "month"];
     for (const timeframe of timeframes) {
+        const types = ["pie", "area", "primary"];
         if (!Array.isArray(buckets[timeframe])) continue;
-        const res = await fetch(`api/journals/visualize/${timeframe}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type: "pie" })
-        });
-        if (!res.ok) {
-            console.error(`Failed to fetch ${timeframe} data:`, await res.json());
-            continue;
+        for (const type of types) {
+            const res = await fetch(`api/journals/visualize/${timeframe}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: type })
+            });
+            if (!res.ok) {
+                console.error(`Failed to fetch ${timeframe} data:`, await res.json());
+                continue;
+            }
+            const data = await res.json();
+            buckets[timeframe].push(data);
         }
-        const data = await res.json();
-        buckets[timeframe].push(data);
     }
 };
 
