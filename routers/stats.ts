@@ -27,7 +27,8 @@ const backgroundColor = [
 const chartTitles = {
     "pie": "Your Mood, Piece by Piece",
     "area": "Journal Sentiments Over Time",
-    "primary": "Your Core Emotion"
+    "primary": "Your Core Emotion",
+    "bar-line": "Correlation Between Journal Length and Mood"
 }
 
 interface JournalVisualize {
@@ -129,6 +130,17 @@ function getArea(
     return dailyAverages;
 }
 
+// Get journal lengths
+function getJournalLengths(
+    journals: JournalSchema[]
+) {
+    let lengths: number[];
+    for (const journal of journals) {
+        lengths.push(journal.journal.length)
+    }
+    return lengths
+}
+
 router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) => {
     try {
         const user = await Users.getUser(ctx.session.userId);
@@ -224,33 +236,11 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     data: percentagesRaw,
                 }
             };
-        } else if (type === "area") {
-            const toLocalISO = (d: Date) => {
-                const dd = new Date(d);
-                const y = dd.getFullYear();
-                const m = String(dd.getMonth() + 1).padStart(2, "0");
-                const day = String(dd.getDate()).padStart(2, "0");
-                return `${y}-${m}-${day}`; // local YYYY-MM-DD
-            };
-
-            const byDay = new Map<
-                string,
-                { sum: number[]; count: number }
-            >();
-
-            for (const j of journalsCut) {
-                const key = toLocalISO(new Date(j.date));
-                if (!byDay.has(key)) byDay.set(key, { sum: [0, 0, 0, 0, 0, 0], count: 0 });
-                const acc = byDay.get(key)!;
-                for (let i = 0; i < 6; i++) acc.sum[i] += Number(j.sentiment[i] || 0);
-                acc.count++;
-            }
-
-            const labels = Array.from(byDay.keys()).sort();
-            const series = labels.map((k) => {
-                const { sum, count } = byDay.get(k)!;
-                return sum.map((v) => (count ? v / count : 0)); // average per emotion
-            });
+        } else if (type == "area") {
+            const series = getArea(journalsCut);
+            const labels = journalsCut
+            .map((j) => format(new Date(j.date), "yyyy-MM-dd"))
+            .sort();
 
             const hexToRgba = (hex: string, alpha = 0.25) => {
                 const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -378,6 +368,89 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                 timeframe,
                 chartConfig: config,
                 chartData: { winnerIndex, label, vector } // for tip generation
+            };
+        } else if (type === "bar-line") {
+            const labels = journalsCut
+                .map((j) => format(new Date(j.date), "yyyy-MM-dd"))
+                .sort();
+        
+            const emotionSeries = getArea(journalsCut);
+            const journalLengths = journalsCut.map(j => j.journal.length);
+        
+            const hexToRgba = (hex: string, alpha = 0.25) => {
+                const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                if (!m) return hex;
+                const r = parseInt(m[1], 16);
+                const g = parseInt(m[2], 16);
+                const b = parseInt(m[3], 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            };
+        
+            const datasets: any[] = [
+                {
+                    type: "bar",
+                    label: "Journal Length",
+                    data: journalLengths,
+                    backgroundColor: "rgba(0,0,0,0.4)",
+                    yAxisID: "yBar",
+                },
+                ...EMOTION_LABELS.map((label, i) => ({
+                    type: "line",
+                    label,
+                    data: emotionSeries.map((row) => row[i]),
+                    fill: false,
+                    borderColor: backgroundColor[i],
+                    backgroundColor: hexToRgba(backgroundColor[i], 0.28),
+                    tension: 0.25,
+                    pointRadius: 2,
+                    yAxisID: "yLine",
+                })),
+            ];
+        
+            const config = {
+                type: "bar",
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: { stacked: false, grid: { display: false } },
+                        yBar: {
+                            type: "linear",
+                            position: "left",
+                            title: { display: true, text: "Journal Length (chars)" },
+                            grid: { drawOnChartArea: false },
+                        },
+                        yLine: {
+                            type: "linear",
+                            position: "right",
+                            min: 0,
+                            max: 1,
+                            title: { display: true, text: "Emotion Scores" },
+                            grid: { drawOnChartArea: false },
+                        },
+                    },
+                    plugins: {
+                        legend: { position: "bottom" },
+                        title: {
+                            display: true,
+                            text: "Journal Length vs Emotions Over Time",
+                            font: { size: 22, weight: "bold" },
+                            padding: { top: 10, bottom: 16 },
+                        },
+                        tooltip: {
+                            mode: "index",
+                            intersect: false,
+                        },
+                    },
+                    interaction: { mode: "index", intersect: false },
+                },
+            };
+        
+            res = {
+                timeframe,
+                chartConfig: config,
+                chartData: { labels, datasets: datasets.map((d) => ({ label: d.label, data: d.data })) },
             };
         } else {
             ctx.status = 400; ctx.body = { error: "Unsupported chart type." }; return;
