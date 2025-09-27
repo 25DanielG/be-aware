@@ -79,7 +79,7 @@ main > .lower .page-control .page-right {
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
-  border-radius: 1rem;
+  border-radius: 50%;
   cursor: pointer;
   transition: background 0.3s ease;
 }

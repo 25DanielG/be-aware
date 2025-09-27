@@ -1,0 +1,159 @@
+body {
+    font-family: "Gabarito", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: normal;
+    font-style: normal;
+    display: flex;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+aside {
+    height: 100%;
+    position: relative;
+    max-width: 300px;
+    width: 25%;
+    background: #ededed;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    height: 90%;
+    max-width: 80vw;
+    min-width: 70vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin: 0 auto;
+}
+
+.gc {
+    max-width: 980px;
+    margin: 24px auto;
+    display: grid;
+    gap: 12px;
+    place-items: center;
+}
+
+.gc-track {
+    position: relative;
+    width: min(92vw, 900px);
+    height: min(60vh, 520px);
+    display: grid;
+    place-items: center;
+}
+
+.gc-canvas {
+    position: absolute;
+    width: 72%;
+    height: 72%;
+    transition: transform .35s ease, opacity .35s ease, filter .35s ease;
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .07));
+}
+
+/* chart */
+
+.gc-current {
+    z-index: 3;
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+/* tips */
+
+.gc-tip {
+    max-width: min(92vw, 900px);
+    padding: 8px 10px 0;
+    font-size: 0.95rem;
+    color: #333;
+    text-align: center;
+    line-height: 1.35;
+    min-height: 1.2em;
+    opacity: 0.9;
+}
+
+/* controls */
+
+.gc-controls {
+    display: grid;
+    grid-auto-flow: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.gc-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+.gc-btn:hover {
+    background: #f0f0f0;
+}
+
+.gc-btn:disabled {
+    opacity: .4;
+    cursor: default;
+}
+
+/* pips */
+
+.gc-pips {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.gc-pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #cfcfcf;
+}
+
+.gc-pip.is-active {
+    background: #111;
+}
+
+/* arrows */
+
+.arrow {
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+}
+
+.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
