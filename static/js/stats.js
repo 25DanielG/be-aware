@@ -1,7 +1,7 @@
 const chartBuckets = {
-  day: [],
-  week: [],
-  month: []
+    day: [],
+    week: [],
+    month: []
 };
 
 (() => {
@@ -12,11 +12,17 @@ const chartBuckets = {
     const btnPrev = el.querySelector(".gc-prev-btn");
     const btnNext = el.querySelector(".gc-next-btn");
     const pipsWrap = el.querySelector(".gc-pips");
+    const tipEl = el.querySelector(".gc-tip");
 
     /** @type {Chart|null} */
     let chart = null;
-    /** @type {Array<{type:string, data:any, options?:any, plugins?:any[]}>} */
-    let configs = [];
+
+    /**
+     * Internally we keep an array of { config: ChartJsConfig, tip: string }
+     * regardless of how the caller provided it.
+     * @type {Array<{config:any, tip:string}>}
+     */
+    let items = [];
     let idx = 0;
 
     function destroyChart() {
@@ -27,54 +33,79 @@ const chartBuckets = {
         if (!cfg) return null;
         return new Chart(canvas.getContext("2d"), cfg);
     }
+
+    function normalize(one) {
+        if (!one) return null;
+        if (one.chartConfig) {
+            return { config: one.chartConfig, tip: one.tip ?? "" };
+        }
+        if (one.config) {
+            return { config: one.config, tip: one.tip ?? "" };
+        }
+        return { config: one, tip: "" };
+    }
+
     function renderPips() {
         pipsWrap.innerHTML = "";
-        configs.forEach((_, i) => {
+        items.forEach((_, i) => {
             const dot = document.createElement("span");
             dot.className = "gc-pip" + (i === idx ? " is-active" : "");
             pipsWrap.appendChild(dot);
         });
     }
+
     function render() {
         destroyChart();
-        chart = makeChart(canvCurr, configs[idx] || null);
-        btnPrev.disabled = idx === 0;
-        btnNext.disabled = idx >= configs.length - 1 || configs.length === 0;
+        const current = items[idx] || null;
+        chart = makeChart(canvCurr, current?.config || null);
+
+        if (tipEl) tipEl.textContent = current?.tip || ""; // tip text
+
+        btnPrev.disabled = idx === 0; // controls
+        btnNext.disabled = idx >= items.length - 1 || items.length === 0;
+
         renderPips();
     }
+
     function go(delta) {
         const next = idx + delta;
-        if (next < 0 || next > configs.length - 1) return;
-        idx = next; render();
+        if (next < 0 || next > items.length - 1) return;
+        idx = next;
+        render();
     }
 
     window.GraphCarousel = {
-        set(items) {
-            configs = Array.isArray(items) ? items.slice() : [];
-            idx = Math.min(idx, Math.max(0, configs.length - 1));
+        set(arr) {
+            const list = Array.isArray(arr) ? arr : [];
+            items = list.map(normalize).filter(Boolean);
+            idx = Math.min(idx, Math.max(0, items.length - 1));
             render();
         },
-        add(cfg) {
-            configs.push(cfg);
-            if (configs.length === 1) idx = 0;
+        add(one) {
+            const n = normalize(one);
+            if (!n) return;
+            items.push(n);
+            if (items.length === 1) idx = 0;
             render();
         },
-        insertAt(i, cfg) {
-            const clamped = Math.max(0, Math.min(i, configs.length));
-            configs.splice(clamped, 0, cfg);
-            if (configs.length === 1) idx = 0;
+        insertAt(i, one) {
+            const n = normalize(one);
+            if (!n) return;
+            const clamped = Math.max(0, Math.min(i, items.length));
+            items.splice(clamped, 0, n);
+            if (items.length === 1) idx = 0;
             render();
         },
         removeAt(i) {
-            if (i < 0 || i >= configs.length) return;
-            configs.splice(i, 1);
-            idx = Math.min(idx, Math.max(0, configs.length - 1));
+            if (i < 0 || i >= items.length) return;
+            items.splice(i, 1);
+            idx = Math.min(idx, Math.max(0, items.length - 1));
             render();
         },
         next() { go(1); },
         prev() { go(-1); },
         getIndex() { return idx; },
-        getConfigs() { return configs.slice(); }
+        getItems() { return items.slice(); }
     };
 
     btnPrev.addEventListener("click", () => go(-1));
@@ -108,8 +139,12 @@ const initializeGraphs = async (buckets) => {
 };
 
 const addGraphs = async () => {
+    StatusUI.show("Graphing...");
     await initializeGraphs(chartBuckets);
-    window.GraphCarousel.add(chartBuckets.week[0].chartConfig);
+    console.log(chartBuckets);
+    GraphCarousel.set(chartBuckets.week);
+    StatusUI.success("Loaded");
+    StatusUI.hide();
 };
 
 addGraphs();

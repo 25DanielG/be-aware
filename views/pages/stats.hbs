@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Be Aware</title>
+    <link rel="stylesheet" href="/css/status.css">
     <link rel="stylesheet" href="/css/stats.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     {{> head}}
@@ -20,6 +21,8 @@
                     <canvas class="gc-canvas gc-current"></canvas>
                 </div>
 
+                <div class="gc-tip" role="note" aria-live="polite"></div>
+
                 <div class="gc-controls">
                     <button class="gc-btn gc-prev-btn" aria-label="Previous chart">
                         <i class="arrow left"></i>
@@ -33,7 +36,10 @@
         </div>
     </main>
 
+    {{> status}}
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script aria-hidden="true" src="/js/status.js"></script>
     <script aria-hidden="true" src="/js/stats.js"></script>
     <script aria-hidden="true" src="/js/sidebar.js"></script>
 </body>

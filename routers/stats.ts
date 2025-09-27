@@ -13,6 +13,7 @@ import Stats from "../helpers/stats"
 import mongoose from "../db";
 import { format, subDays, subWeeks, subMonths, isAfter } from "date-fns";
 import { Journal as JournalSchema } from "../models/journal";
+import { group } from "console";
 
 const router = new Router<Koa.DefaultState, Koa.Context>();
 const backgroundColor = [
@@ -24,9 +25,9 @@ const backgroundColor = [
     "#FF9F40", // Surprise
 ]
 const chartTitles = {
-    "pie" : "Your Mood, Piece by Piece",
-    "area" : "Journal Sentiments Over Time",
-    "primary" : "Your Core Emotion"
+    "pie": "Your Mood, Piece by Piece",
+    "area": "Journal Sentiments Over Time",
+    "primary": "Your Core Emotion"
 }
 
 interface JournalVisualize {
@@ -171,56 +172,65 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
         }
 
         let journalsCut = getJournalsInTimeframe(journals, timeframe); // only journals in timeframe
+        let config;
+        let res;
+        let grouped: any;
 
-        // pie chart
-        const [percentagesRaw] = getPercentage(journalsCut) || [[]];
-        const percentages = Array.isArray(percentagesRaw) && percentagesRaw.length === 6 ? percentagesRaw : [0, 0, 0, 0, 0, 0];
-        const EMOTION_LABELS = ["Joy", "Sadness", "Anger", "Fear", "Disgust", "Surprise"];
-        const isFraction = percentages.some(v => v > 0 && v <= 1) && percentages.every(v => v <= 1);
-        const dataChart = isFraction ? percentages.map(v => +(v * 100).toFixed(2)) : percentages;
-        const pieConfig = {
-            type: "pie",
-            data: {
-                labels: EMOTION_LABELS,
-                datasets: [
-                    {
-                        label: "Emotion share",
-                        data: dataChart,
-                        backgroundColor: backgroundColor,
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: "bottom" },
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx: any) => {
-                                const label = ctx.label || "";
-                                const val = ctx.parsed ?? 0;
-                                const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0) || 1;
-                                const pct = ((val / total) * 100).toFixed(1);
-                                return `${label}: ${val}${isFraction ? "%" : ""} (${pct}%)`;
+        if (type == "pie") { // pie chart
+            const [percentagesRaw] = getPercentage(journalsCut) || [[]];
+            const percentages = Array.isArray(percentagesRaw) && percentagesRaw.length === 6 ? percentagesRaw : [0, 0, 0, 0, 0, 0];
+            const EMOTION_LABELS = ["Joy", "Sadness", "Anger", "Fear", "Disgust", "Surprise"];
+            const isFraction = percentages.some(v => v > 0 && v <= 1) && percentages.every(v => v <= 1);
+            const dataChart = isFraction ? percentages.map(v => +(v * 100).toFixed(2)) : percentages;
+            config  = {
+                type: "pie",
+                data: {
+                    labels: EMOTION_LABELS,
+                    datasets: [
+                        {
+                            label: "Emotion share",
+                            data: dataChart,
+                            backgroundColor: backgroundColor,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: "bottom" },
+                        title: {
+                            display: true,
+                            text: chartTitles["pie"],
+                            font: { size: 22, weight: "bold" },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx: any) => {
+                                    const label = ctx.label || "";
+                                    const val = ctx.parsed ?? 0;
+                                    const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0) || 1;
+                                    const pct = ((val / total) * 100).toFixed(1);
+                                    return `${label}: ${val}${isFraction ? "%" : ""} (${pct}%)`;
+                                }
                             }
                         }
                     }
                 }
-            }
-        };
+            };
 
-        let grouped: any;
+            res = {
+                timeframe,
+                chartConfig: config,
+                chartData: {
+                    data: percentagesRaw,
+                }
+            };
+        }
+
         switch (type) {
-            case "pie":
-                grouped = getPercentage(journalsCut);
-
-                ctx.body = {
-                    timeframe,
-                    chartConfig: pieConfig
-                };
-                break;
             case "primary":
                 grouped = getPrimaryEmotion(journalsCut);
                 ctx.body = {
@@ -244,10 +254,9 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
         }
 
         ctx.body = {
-            timeframe: ctx.body.timeframe,
-            chartTitle: chartTitles[type],
-            chartData: ctx.body.chartData,
-            tip: Stats.generateTip(type, ctx.body.chartData)
+            timeframe: res.timeframe,
+            chartConfig: res.chartConfig,
+            tip: await Stats.generateTip(type, res.chartData)
         }
 
     } catch (err) {

@@ -65,6 +65,19 @@ main {
     transform: translateX(0) scale(1);
 }
 
+/* tips */
+
+.gc-tip {
+    max-width: min(92vw, 900px);
+    padding: 8px 10px 0;
+    font-size: 0.95rem;
+    color: #333;
+    text-align: center;
+    line-height: 1.35;
+    min-height: 1.2em;
+    opacity: 0.9;
+}
+
 /* controls */
 
 .gc-controls {
