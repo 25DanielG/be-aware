@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Be Aware</title>
     <link rel="stylesheet" href="/css/landing.css">
+    {{> head}}
 </head>
 <body>
     <main>
@@ -12,8 +13,8 @@
             <div class="header-text">Write. Reflect. Grow.</div>
             <div class="subheader-text">Journal your thoughts, track your mood, and discover ways to feel better.</div>
             <div class="button-container">
-                <button class="light login-button" id="sign-up">Get Started</button>
-                <button class="dark login-button" id="login">Login</button>
+                <button class="light login-button" id="sign-up" onclick="window.location.href='/signup'">Get Started</button>
+                <button class="dark login-button" id="login" onclick="window.location.href='/login'">Login</button>
             </div>
         </div>
     </main>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be Aware</title>
+    <link rel="stylesheet" href="/css/login.css">
+    {{> head}}
+</head>
+<body>
+    <main>
+        <div class="header-text">Create an account</div>
+        <div class="subheader-text">to start reflecting</div>
+        <form action="/signup" method="POST">
+            <div class="input-container">
+                <div>
+                    <div class="subtext">First Name</div>
+                    <input type="text" class="login-input" id="first" name="firstName" placeholder="First Name"/>
+                </div>
+                <div>
+                    <div class="subtext">Last Name</div>
+                    <input type="text" class="login-input" id="last" name="lastName" placeholder="Last Name"/>
+                </div>
+                <div>
+                    <div class="subtext">Email</div>
+                    <input type="text" class="login-input" id="email" name="email" placeholder="Email"/>
+                </div>
+                <div>
+                    <div class="subtext">Password</div>
+                    <input type="password" class="login-input" id="password" name="password" placeholder="Password"/>
+                </div>
+                <button class="dark login-button" id="login" type="submit">Sign Up</button>
+                <div class="subtext">Already have an account? <a href="/login">Login</a></div>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
