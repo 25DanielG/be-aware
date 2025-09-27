@@ -4,16 +4,99 @@
     const right = document.querySelector(".page-control .page-right");
     const curEl = document.querySelector(".page-control .current");
     const totEl = document.querySelector(".page-control .total");
+    const modal = document.querySelector(".tip-modal");
+    const modalCloseBtns = modal?.querySelectorAll(".tip-close");
+    const modalBackdrop = modal?.querySelector(".tip-backdrop");
+    const tipTextEl = modal?.querySelector(".tip-text");
+    const hintBtn = document.querySelector(".hint");
 
-    if (!ta || !left || !right || !curEl || !totEl) {
+    if (!ta || !left || !right || !curEl || !totEl || !hintBtn || !modal || !tipTextEl) {
         console.warn("Pagination init: missing required elements");
         return;
     }
+
+    let timer = null;
+    let lastSent = "";
+    let latest = "";
 
     const pages = [
         { value: "", readOnly: false }
     ];
     let idx = 0;
+
+    const signature = (s) => `${s.length}:${s.slice(0, 50)}`;
+
+    async function requestTip() {
+        console.log("Requesting tip...");
+        const text = (window.JournalPager?.text?.() ?? ta.value ?? "").trim();
+        if (text.length < 20) return;
+
+        const sig = signature(text);
+        if (sig === lastSent) return;
+
+        try {
+            const res = await fetch("/api/journal/prompt", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+            if (!res.ok) throw new Error(`Prompt failed: ${res.status}`);
+            const data = await res.json();
+            const tip =
+                typeof data?.prompt === "string"
+                    ? data.prompt.trim()
+                    : typeof data?.prompt?.text === "string"
+                        ? data.prompt.text.trim()
+                        : typeof data?.prompt?.message === "string"
+                            ? data.prompt.message.trim()
+                            : "";
+
+            lastSent = sig;
+
+            if (tip) {
+                latest = tip;
+                tipTextEl.textContent = latest;
+                hintBtn.hidden = false;
+                hintBtn.classList.add("is-visible");
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function scheduleTip() {
+        console.log("Scheduling tip...");
+        clearTimeout(timer);
+        timer = setTimeout(requestTip, 1000 * 30); // 30s
+    }
+
+    ta.addEventListener("input", scheduleTip);
+
+    const reScheduleOnPageChange = () => {
+        // if cur page is not read only
+        if (!pages[idx].readOnly) scheduleTip();
+    }
+    document.querySelector(".page-left")?.addEventListener("click", reScheduleOnPageChange);
+    document.querySelector(".page-right")?.addEventListener("click", reScheduleOnPageChange);
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            setTimeout(reScheduleOnPageChange, 0);
+        }
+    });
+
+    hintBtn.addEventListener("click", () => {
+        if (!latest) return;
+        tipTextEl.textContent = latest;
+        modal.hidden = false;
+        modal.querySelector(".tip-close")?.focus();
+    });
+
+    const closeModal = () => { modal.hidden = true; };
+    modalCloseBtns?.forEach(btn => btn.addEventListener("click", closeModal));
+    modalBackdrop?.addEventListener("click", closeModal);
+    document.addEventListener("keydown", (e) => {
+        if (!modal.hidden && e.key === "Escape") closeModal();
+    });
 
     function render() {
         const p = pages[idx];
@@ -75,6 +158,7 @@
             });
             idx = 0;
             render();
+            setTimeout(scheduleTip, 1500); // 1.5s
         }
     };
 

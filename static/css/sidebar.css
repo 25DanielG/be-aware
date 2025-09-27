@@ -17,7 +17,7 @@ aside .sidebar .nav-links {
   align-items: center;
   gap: 0.15rem;
   align-items: stretch;
-  margin-top: 5rem;
+  margin-top: 3rem;
 }
 
 aside .sidebar .nav-links > .nav-link {
@@ -167,4 +167,20 @@ aside.closed .sidebar .nav-links > .nav-link .label {
 
 aside.closed .sidebar .nav-links .calendar {
   display: none;
+}
+
+/* hint logo */
+
+aside .sidebar .hint {
+  margin-top: 3rem;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20%);
+  }
 }

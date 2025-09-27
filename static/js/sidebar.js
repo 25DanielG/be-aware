@@ -1,4 +1,4 @@
-const logo = document.querySelector('aside .sidebar .logo');
+const logo = document.querySelector('aside .sidebar #logo');
 const sidebar = document.querySelector('aside');
 
 setTimeout(() => {

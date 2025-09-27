@@ -1,6 +1,9 @@
 <aside class="closed">
     <div class="sidebar">
-        <div class="logo"><img src="/img/logo.png"/></div>
+        <div class="logo" id="logo"><img src="/img/logo.png"/></div>
+        {{#if journal}}
+            <div class="logo hint" aria-label="Show writing tip" title="Writing tip" hidden><img src="/img/hint.png"/></div>
+        {{/if}}
         <nav class="nav-links">
             <span class="subtext">Pages</span>
             <a class="nav-link {{#if journal}} active {{/if}}" href="/journal">
