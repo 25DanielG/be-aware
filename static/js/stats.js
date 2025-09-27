@@ -158,7 +158,7 @@ const chartBuckets = {
 const initializeGraphs = async (buckets) => {
     const timeframes = ["day", "week", "month"];
     for (const timeframe of timeframes) {
-        const types = ["pie", "area", "primary"];
+        const types = ["pie", "area", "primary", "bar-line"];
         if (!Array.isArray(buckets[timeframe])) continue;
         for (const type of types) {
             const res = await fetch(`api/journals/visualize/${timeframe}`, {
