@@ -55,7 +55,7 @@ const router = new Router<Koa.DefaultState, Koa.Context>();
 
 router.use("", loginRouter.routes());
 router.use("", indexRouter.routes());
-router.use("/api", journalRouter.routes());
+router.use("/journal", journalRouter.routes());
 router.use("/users", usersRouter.routes());
 
 app.use(router.routes());
