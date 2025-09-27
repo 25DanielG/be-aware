@@ -22,4 +22,9 @@ router.get("/all", async (ctx) => {
     ctx.body = { entries };
 })
 
+router.delete("/all", async (ctx) => {
+    await Journal.removeAll();
+    ctx.body = { message: "All journal entries deleted." };
+});
+
 export default router;
