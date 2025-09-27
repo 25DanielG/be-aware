@@ -1,4 +1,5 @@
 export const apiconfig = {
     apiKey: '',
-    agentId: ''
+    agentId: '',
+    apiEmotion: ''
 }
