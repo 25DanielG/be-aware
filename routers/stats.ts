@@ -9,6 +9,7 @@ import requireAuth from "../middleware/requireAuth";
 import * as user from "../helpers/users";
 import Users from "../helpers/users";
 import Journal from "../helpers/journal";
+import Stats from "../helpers/stats"
 import mongoose from "../db";
 import { format, subDays, subWeeks, subMonths, isAfter } from "date-fns";
 import { Journal as JournalSchema } from "../models/journal";
@@ -22,6 +23,11 @@ const backgroundColor = [
     "#9966FF", // Anger
     "#FF9F40", // Surprise
 ]
+const chartTitles = {
+    "pie" : "Your Mood, Piece by Piece",
+    "area" : "Journal Sentiments Over Time",
+    "primary" : "Your Core Emotion"
+}
 
 interface JournalVisualize {
     type: string
@@ -235,6 +241,13 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                     }
                 };
                 break;
+        }
+
+        ctx.body = {
+            timeframe: ctx.body.timeframe,
+            chartTitle: chartTitles[type],
+            chartData: ctx.body.chartData,
+            tip: Stats.generateTip(type, ctx.body.chartData)
         }
 
     } catch (err) {
