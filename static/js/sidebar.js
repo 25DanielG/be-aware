@@ -102,10 +102,12 @@ if (add) {
 
 const calendar = document.querySelector("aside .sidebar .calendar");
 if (calendar) {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const lastSunday = new Date(today); lastSunday.setDate(today.getDate() - today.getDay());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 6);
     calendar.innerHTML = "";
-    for (let d = new Date(lastSunday); d <= today; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
         const dayEl = document.createElement("div");
         dayEl.className = "day";
         dayEl.textContent = d.toLocaleDateString(undefined, { weekday: "short" })[0];
