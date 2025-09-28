@@ -68,7 +68,7 @@
         if (pages[idx]?.readOnly) return;
         console.log("Scheduling tip...");
         clearTimeout(timer);
-        timer = setTimeout(requestTip, 1000 * 15); // 15s
+        timer = setTimeout(requestTip, 1000 * 5); // 15s
     }
 
     ta.addEventListener("input", () => {

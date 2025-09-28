@@ -17,7 +17,7 @@ router.get("/", async (ctx) => {
     await ctx.render("pages/landing");
 });
 
-router.get("/statistics", compose([bodyParser(), requireAuth]), async (ctx) => {
+router.get("/insights", compose([bodyParser(), requireAuth]), async (ctx) => {
     const userId = ctx.session.userId;
     const userName = await Users.getName(userId);
     const entries = await Users.getUserJournals(userId);
