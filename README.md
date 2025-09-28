@@ -1,9 +1,10 @@
-# Be Aware
+# BeAware
 
 ## 👤 Inspiration
+We stumbled upon this project idea while reflecting on problems we face in our own daily lives. As students in a rigorous college environment—constantly bogged down with homework, projects, and exams—managing stress and caring for our mental health has become critical for both productivity and happiness. So we decided to build a web app to help people track their moods and find solutions for anxiety and stress. That’s how BeAware was born. Drawing on our expertise in web development and frameworks, we put together a prototype within the first few hours. Later, as we hit more crossroads, we added several features that enhanced the journaling experience, including AI suggestions during the writing process. In the end, our team designed a web app we were genuinely proud of; we even joked that no matter the outcome of the competition, we’d personally use the site regardless.
 
 ## 🪄 What it does
-Be Aware is an AI-assisted journaling tool designed to help users reflect on their daily experiences, recognize emotional patterns, and take small, actionable steps toward mental wellbeing. Using AI insights and a minimalist interface, it:  
+BeAware is an AI-assisted journaling tool designed to help users reflect on their daily experiences, recognize emotional patterns, and take small, actionable steps toward mental wellbeing. Using AI insights and a minimalist interface, it:  
 
 - **Allows Unlimited Journaling:** The app lets users write as often as they want everyday, encouraging frequent expression and daily habit building.  
 - **Creates a Peaceful Space:** Through a clean and minimal journaling environemnt, the user interface reduces distractions and inspires reflection, whether for today or over the past week. The UI includes changing backgrounds and a collapsable sidebar.
@@ -28,7 +29,7 @@ AI Workflow: Mastra
 - **Insight Analysis:** The app shows personalized AI insight tips under each graph to improve long-term mental health. These tips are collected through a separate tips workflow.
 
 ## 😥 Challenges we ran into
-Deciding to work on this idea as a team of two, we had to greatly split up the workload and manage our time effectively.
+Working as a team of two, we had to greatly split up the workload and manage our time effectively.
 - **Mastra Integration:** Connecting Mastra into our existing web framework required exposing multiple dedicated endpoints for AI workflows, which we solved by routing requests between our website and the Mastra backend.
 - **Balancing Design Goals:** Striking the right balance between minimalism, usability, and inspiration was tricky. We solved this with subtle design touches; we added simple switchable backgrounds for journal pages and an inviting gradient landing page reflecting the “colors of emotion.” Furthermore, the UI included designing a comfortable sidebar that could collapse/expand smoothly while keeping icons visible proved challenging, especially with CSS transitions on width changes.
 - **Pagination & Graph Carousel:** Creating a system to flip through journals and graphs without clutter led us to build a custom objects (`window.JournalPager`) and (`window.GraphCarousel`) that manages cached data, tooltips, and navigation.  
@@ -41,8 +42,15 @@ Deciding to work on this idea as a team of two, we had to greatly split up the w
 - **AI for habits** Beyond sentiment, our AI offers reflective prompts, allowing users to make concrete plans on mental health improvement.
 
 ## 🧑‍🏫 What we learned
+- **Focus on Core Features**: We spent too much time in the beginning tweaking little details in the UI or making the backend as efficient as possible, but the core product should come before the polishing. As we continued working, we gradually adjusted our workflow to focus on building the important functionalities first, then adding extra features later.
+- **Stay Curious**: Ideas you start out with don't always reflect the end product. By "staying curious," we managed to come up with better ideas during the development process that eventually played key roles in our end result, including the AI prompting, tips, and UI choices.
+- **Don't Install MongoDB For 4 Hours Straight**: Yes, this actually happened during the hackathon as a corrupted MongoDB made its way to one of our laptops, and we ended up spending four hours trying to fix it using brew and other methods. Legend has it it's still not fixed to this day.
+- **Don't Sleep on Your Teammate's Couch**: No matter how comfy that sofa looks, try to get some sleep elsewhere.
 
 ## 🔮 What's next for BeAware: AI Journal
+- **Surveys & Quizzes**: Beyond just journaling capabilities, BeAware could also serve as a mental health assessment platform of sorts, offering tailored surveys to users that would provide invaluable information about mood cycles and emotional well-being.
+- **Custom Typography**: Custom cursor and typing for a more smooth journaling experience.
+- **Therapist Usage**: Connect with therapists and psychiatrists on how to properly apply sentiment data for support and treatment.
 
 ### 🚀 GitHub and Running
 
