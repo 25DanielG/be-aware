@@ -19,6 +19,10 @@ export const emotionAgent = new Agent({
       - Surprise
 `,
   model: openai('gpt-4o-mini'),
+  defaultStreamOptions: {
+    temperature: 0.7,
+    maxTokens: 500,
+  },
   tools: {},
   memory: new Memory({
     storage: new LibSQLStore({

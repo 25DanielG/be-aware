@@ -31,10 +31,12 @@ const classifyEntry = createStep({
     let prompt = `Given a ${entry.chartType} chart/graph with data: ${JSON.stringify(entry.data)}, qualitatively analyze the user's emotional state and respond as follows:
       1. If the user's emotions appear balanced, provide encouraging feedback.
       2. If the user's emotions indicate challenges, make that observation suggest practical tips to improve mental well-being.
-      Respond in two supportive, caring sentences (25 words max). Acknowledge and validate the user's feelings, and gently suggest uplifting or comforting actions.`;
+      Respond in two supportive, caring sentences (25 words max). Acknowledge and validate the user's feelings, and gently suggest uplifting or comforting actions. Feedback should be related to the given graph type and data.
+      Consider giving actionable tips such as mindfulness exercises, physical activities, social interactions, or creative outlets that are specific to a ${entry.chartType} chart.
+      `;
 
     if (entry.journals && entry.journals.length > 0) {
-      prompt += ` Your feedback should be empathetic, encouraging, and personalized to the user's journals found below: ${entry.journals.join(' ')}`;
+      prompt += ` Your feedback should be empathetic, be encouraging, be personalized to the user's journals, cite specific moments from the journals found below: ${entry.journals.join(' ')}.`;
     }
 
     // console.log(prompt);
