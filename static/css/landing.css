@@ -101,3 +101,14 @@ main .button-container > button.dark:hover {
 main .button-container > button.light:hover {
   background-color: #f0f0f0;
 }
+
+/* landing image */
+
+.landing-image {
+  height: 50px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin-top: 20px;
+  margin-left: 20px;
+}
