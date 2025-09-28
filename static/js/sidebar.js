@@ -147,3 +147,22 @@ const initCal = () => {
 }
 
 initCal();
+
+const backgroundLinks = document.querySelectorAll(".background-link");
+if (backgroundLinks) {
+    backgroundLinks.forEach(link => {
+        link.addEventListener("click", e => {
+            e.preventDefault();
+            if (link.classList.contains("null")) {
+                document.body.style.backgroundImage = "";
+            } else {
+                const img = link.querySelector("img");
+                if (img) {
+                    document.body.style.backgroundImage = `url(${img.src})`;
+                    document.body.style.backgroundSize = "cover";
+                    document.body.style.backgroundPosition = "center";
+                }
+            }
+        });
+    });
+}
