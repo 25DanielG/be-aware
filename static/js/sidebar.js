@@ -158,7 +158,8 @@ if (backgroundLinks) {
             } else {
                 const img = link.querySelector("img");
                 if (img) {
-                    document.body.style.backgroundImage = `url(${img.src})`;
+                    const newsrc = img.src.replace("-downsized", "").replace(".jpeg", ".jpg");
+                    document.body.style.backgroundImage = `url(${newsrc})`;
                     document.body.style.backgroundSize = "cover";
                     document.body.style.backgroundPosition = "center";
                 }

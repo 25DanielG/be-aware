@@ -377,7 +377,7 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
                         tooltip: { enabled: false },
                         title: {
                             display: true,
-                            text: chartTitles["primary"],
+                            text: chartTitles["primary"] + ": " + EMOTION_LABELS[winnerIndex],
                             font: { size: 22, weight: "bold" },
                             padding: { top: 10, bottom: 16 }
                         }
