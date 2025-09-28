@@ -180,12 +180,13 @@ main>.lower .page-control .page-right:hover {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 .tip-close {
   background: transparent;
   border: 0;
-  font-size: 22px;
   cursor: pointer;
   line-height: 1;
   height: 36px;
@@ -193,8 +194,17 @@ main>.lower .page-control .page-right:hover {
   font-size: 0.8rem;
 }
 
+.tip-close.corner-close {
+  font-size: 1.5rem;
+}
+
 .tip-close:hover {
   background: #f4f4f4;
+}
+
+.tip-icon {
+  width: 40px;
+  height: 40px;
 }
 
 .tip-body {
