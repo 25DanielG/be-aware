@@ -12,8 +12,6 @@ Be Aware is an AI-assisted journaling tool designed to help users reflect on the
 - **Visualizes Insights Clearly:** The site transforms journal entries and emotional data into simple, easy-to-read graphs that highlight patterns and changes. The page includes pie charts, bar-line charts, area charts, and a core emotion plot.
 - **Suggests Actionable Habits:** We offer tailored AI tips tied to each graph and past journal entries, suggesting possible habit adjustments that may improve mental health over time.
 
----
-
 ## 🖥️ How we built it
 We combined modern web frameworks with AI workflow an inviting journaling experience:
 
@@ -27,9 +25,7 @@ AI Workflow: Mastra
 - **Journaling:** While the user is journaling, the app tracks inactivity while writing. After 5 seconds of inactivity, the app sends a request to an AI tooltip Mastra workflow, prompting gpt-4o-mini for a tooltip.
 - **Sentiment Analysis:** Once a journal is submitted and stored in the database, an array of sentiment values is assigned to the journal based on each emotion: [Happiness, Sadness, Fear, Disgust, Anger, Surprise]. This is done through a separate sentiment anaylsis workflow.
 - **Graph Analysis:** Through chart.js, the app creates the graphs in the backend, sending them to the frontend for display. Graphs include pie charts, area charts, bar-line charts, and a core emotion chart. 
-- **Insight Analysis:** The app shows personalized AI insight tips under each graph to improve long-term mental health. These tips are collected through a separate tips workflow.  
-
----
+- **Insight Analysis:** The app shows personalized AI insight tips under each graph to improve long-term mental health. These tips are collected through a separate tips workflow.
 
 ## 😥 Challenges we ran into
 Deciding to work on this idea as a team of two, we had to greatly split up the workload and manage our time effectively.
@@ -38,8 +34,6 @@ Deciding to work on this idea as a team of two, we had to greatly split up the w
 - **Pagination & Graph Carousel:** Creating a system to flip through journals and graphs without clutter led us to build a custom objects (`window.JournalPager`) and (`window.GraphCarousel`) that manages cached data, tooltips, and navigation.  
 - **Performance Optimization:** To keep the platform lightweight, we downsized assets, cached processed data, and wrote clean, simple code that loads quickly. For example, unsplash backgrounds stored in the sidebar would lag the animations, leading us to downsize the background images. 
 - **AI Tip Uniqueness:** Early tests showed repetitive AI insight suggestions Through adjusting our prompts to the insight tips workflow and increasing the model's temperature, we managed to improve the model's variety and usefulness of graph-linked AI tips.
-
----
 
 ## 🏆 Accomplishments that we're proud of
 - **Product we use**: We shipped a journaling app that we are excited to open every day, not just demo. Disregarding the fact that this is a hackathon, we both look forward to developing journaling habits everyday and using the AI to better out mental health. We can form consistent reflection habits, track emotional patterns, and nudge small improvements in mental health.
