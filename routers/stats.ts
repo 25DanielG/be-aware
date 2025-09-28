@@ -259,8 +259,21 @@ router.post("/journals/visualize/:time", compose([bodyParser()]), async (ctx) =>
             };
         } else if (type == "area") {
             const area_data = getArea(journalsCut);
-            const series = area_data[0];
-            const labels = area_data[1];
+            const series = area_data[0] as number[][];
+            const dates = area_data[1] as Date[];
+            const toLocalISO = (d: Date) => {
+                const dd = new Date(d);
+                return `${dd.getFullYear()}-${String(dd.getMonth() + 1).padStart(2, "0")}-${String(dd.getDate()).padStart(2, "0")}`;
+            };
+
+            if (dates.length === 1 && series.length === 1) {
+                const next = new Date(dates[0]);
+                next.setDate(next.getDate() + 1);
+                dates.push(next);
+                series.push([...series[0]]);
+            }
+
+            const labels = dates.map(toLocalISO);
 
             const hexToRgba = (hex: string, alpha = 0.25) => {
                 const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
